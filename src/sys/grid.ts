@@ -14,6 +14,8 @@ export type CellStyle = {
 /** Semantic interaction attached to a cell. The renderer never interprets it. */
 export type CellAction = {
   command: string
+  /** Text placed on the clipboard instead of running a command, when present. */
+  copy?: string
 }
 
 export type Cell = CellStyle & {

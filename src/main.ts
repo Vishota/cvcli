@@ -33,6 +33,6 @@ const kernel = new KernelImpl({ applications, host })
 const root = document.getElementById('app')
 if (!root) throw new Error('missing #app element')
 
-const renderer = createHtmlRenderer(kernel.screen)
+const renderer = createHtmlRenderer(kernel.screen, kernel.themes)
 renderer.mount(root)
 kernel.boot('neofetch')

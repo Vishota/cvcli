@@ -9,6 +9,7 @@ import { reboot } from './reboot.ts'
 import { shell } from './shell.ts'
 import { shutdown } from './shutdown.ts'
 import { split } from './split.ts'
+import { theme } from './theme.ts'
 
 /** Every application the kernel knows about, in listing order. */
 export const applications: Application[] = [
@@ -22,6 +23,7 @@ export const applications: Application[] = [
   ps,
   kill,
   split,
+  theme,
   reboot,
   shutdown,
 ]

@@ -8,6 +8,7 @@ import { kill, ps } from './src/apps/ps.ts'
 import { reboot } from './src/apps/reboot.ts'
 import { shell } from './src/apps/shell.ts'
 import { split } from './src/apps/split.ts'
+import { theme } from './src/apps/theme.ts'
 import { tokenize } from './src/apps/shell.ts'
 import { parseLayout, countLeaves } from './src/sys/layout.ts'
 import { KernelImpl } from './src/sys/kernel.ts'
@@ -22,7 +23,7 @@ function check(name: string, condition: boolean, extra?: string): void {
   }
 }
 
-const applications: Application[] = [shell, help, man, echo, clear, fetch, neofetch, ps, kill, split, reboot]
+const applications: Application[] = [shell, help, man, echo, clear, fetch, neofetch, ps, kill, split, reboot, theme]
 const kernel = new KernelImpl({
   applications,
   host: { reboot: () => {}, shutdown: () => {}, describe: () => ({ hostname: 'smoke-host', runtime: 'node' }) },
@@ -56,6 +57,7 @@ async function main(): Promise<void> {
     bad = true
   }
   check('bad layout rejected', bad)
+
 
   console.log('tokenize')
   check('quotes', JSON.stringify(tokenize('echo "a b" c')) === JSON.stringify(['echo', 'a b', 'c']))
@@ -98,7 +100,25 @@ async function main(): Promise<void> {
   console.log('boot')
   kernel.boot()
   await sleep(20)
-  check('prompt visible', text().includes('guest@smoke-host:~$'), text())
+  check('prompt visible', text().includes('[guest@smoke-host ~]$'), text())
+
+  console.log('theme')
+  type('theme use neon')
+  await sleep(20)
+  check('theme switched', kernel.themes.name === 'neon', kernel.themes.name)
+  type('theme use nope')
+  await sleep(20)
+  check('unknown theme rejected', kernel.themes.name === 'neon', kernel.themes.name)
+  const grad = kernel.themes.gradient('#ff0000', '#0000ff', 4)
+  check('gradient has steps', !!grad && grad.length === 4 && grad[0] === '#ff0000' && grad[3] === '#0000ff', JSON.stringify(grad))
+  const gradBad = kernel.themes.gradient('nope', '#0000ff', 3)
+  check('gradient rejects bad color', gradBad === null, JSON.stringify(gradBad))
+  type('theme add mine #ffffff #000000 ' + Array.from({ length: 16 }, () => '#123456').join(' '))
+  await sleep(20)
+  check('custom theme added', kernel.themes.has('mine'))
+  type('theme use default')
+  await sleep(20)
+  check('theme restored', kernel.themes.name === 'default')
 
   console.log('commands')
   type('echo [fg=green]boom[/] done')
@@ -167,6 +187,38 @@ async function main(): Promise<void> {
   check('ps pane', after.includes('TTY'))
   check('terminals count', kernel.screen.grid.width > 0)
 
+  console.log('split default layout and titles (isolated kernel)')
+  {
+    const k2 = new KernelImpl({
+      applications,
+      host: { reboot: () => {}, shutdown: () => {}, describe: () => ({ hostname: 'h2', runtime: 'node' }) },
+    })
+    k2.boot()
+    await sleep(10)
+    // No layout argument -> v1:1, two vertical panes.
+    k2.screen.key('split')
+    k2.screen.key('\r')
+    await sleep(40)
+    check('default split yields two panes', k2.screen.terminals().length === 2, `panes=${k2.screen.terminals().length}`)
+    let sep = -1
+    for (let y = 0; y < k2.screen.grid.height; y++) {
+      for (let x = 0; x < k2.screen.grid.width; x++) {
+        if (k2.screen.grid.get(x, y).char === '│') { sep = x; break }
+      }
+      if (sep >= 0) break
+    }
+    check('default split is vertical, near the middle', sep > 30 && sep < 55, `sep=${sep}`)
+    // A title is shown as [TITLE] centered on the pane's top border.
+    for (const ch of 'split v1:1 --title TOP "ps" "echo hi"') k2.screen.key(ch)
+    k2.screen.key('\r')
+    await sleep(60)
+    let titleText = ''
+    for (let y = 0; y < k2.screen.grid.height; y++) {
+      for (let x = 0; x < k2.screen.grid.width; x++) titleText += k2.screen.grid.get(x, y).char
+    }
+    check('pane title drawn', titleText.includes('[TOP]'), titleText.slice(0, 120))
+  }
+
   console.log('click routes to action target')
   let action: { x: number; y: number; command: string } | null = null
   for (let y = 0; y < grid.height && !action; y++) {
@@ -203,14 +255,6 @@ async function main(): Promise<void> {
   type('clear')
   await sleep(30)
   check('clear wipes focused pane', !text().includes('for details'))
-
-  console.log('exit kills shell')
-  type('exit')
-  await sleep(30)
-  kernel.screen.key('x')
-  kernel.screen.key('\r')
-  await sleep(30)
-  check('dead shell accepts nothing', !text().includes('sh: x: command not found'))
 
   console.log('renderer (DOM stub)')
   const makeEl = (tag: string): Record<string, any> => {
@@ -266,6 +310,19 @@ async function main(): Promise<void> {
   const painted = screenEl && screenEl.children.slice(1).some((row: any) => row.innerHTML.includes('guest@') || row.innerHTML.includes('│'))
   check('renderer paints terminal content', !!painted)
   renderer.destroy()
+
+  console.log('exit closes panes, then halts')
+  // Each `exit` closes the focused pane. Exit until the last pane is gone and
+  // the system halts; a halted system must accept no further input.
+  for (let i = 0; i < 6 && !text().includes('halted'); i++) {
+    type('exit')
+    await sleep(40)
+  }
+  check('system halted after last exit', text().includes('halted'))
+  kernel.screen.key('x')
+  kernel.screen.key('\r')
+  await sleep(40)
+  check('halted system accepts nothing', !text().includes('sh: x: command not found'))
 
   console.log(failures === 0 ? '\nALL PASS' : `\n${failures} FAILURES`)
   process.exit(failures === 0 ? 0 : 1)

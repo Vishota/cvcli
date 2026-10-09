@@ -30,19 +30,37 @@ export type ApplicationInfo = {
 
 /** The only way an application reaches the kernel. No renderer in sight. */
 export interface Syscalls {
+  /** This process's own pid (so a pane can tell if it is the only one left). */
+  self(): number
   /** Run another application in this terminal and wait for it, like a child. */
   exec(name: string, args: string[]): Promise<number>
   processes(): ProcessInfo[]
   kill(pid: number): boolean
   /**
    * Replace this terminal with a split layout. Leaves run a shell, optionally
-   * preloaded with a command. Returns leaf terminals in layout order.
+   * preloaded with a command, and may carry a title. Returns leaf terminals in
+   * layout order.
    */
-  split(layout: string, commands?: string[]): Terminal[]
+  split(layout: string, commands?: string[], titles?: string[]): Terminal[]
   applications(): ApplicationInfo[]
   info(): SystemInfo
   reboot(): void
   shutdown(): void
+  /** Active theme name. */
+  themeCurrent(): string
+  /** Every known theme name. */
+  themeList(): string[]
+  /** Switch the active theme. False if the name is unknown. */
+  themeUse(name: string): boolean
+  /** Register a custom theme. False if a color token is invalid. */
+  themeAdd(name: string, fg: string, bg: string, colors: string[]): boolean
+  /** Linear color ramp of `steps` hexes for gradient text. */
+  themeGradient(from: string, to: string, steps: number): string[] | null
+  /**
+   * Split this terminal and run applications, one per leaf. No shell is spawned:
+   * a pane only closes when its application exits.
+   */
+  open(layout: string, commands?: string[], titles?: string[]): Terminal[]
 }
 
 export interface ApplicationContext {

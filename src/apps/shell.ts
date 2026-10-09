@@ -200,12 +200,13 @@ async function interactive(context: ApplicationContext): Promise<number> {
   context.signal.addEventListener('abort', () => resolveExit(130), { once: true })
 
   const prompt = (): string =>
+    '[' +
     styled('guest', { fg: COLORS.green, bold: true }) +
     '@' +
     styled(hostname, { fg: COLORS.cyan, bold: true }) +
-    ':' +
+    ' ' +
     styled('~', { fg: COLORS.blue, bold: true }) +
-    '$ '
+    ']$ '
 
   /**
    * Rewrites the input line. Moves up exactly the rows the previous render

@@ -50,15 +50,17 @@ export function encodeStyle(style: CellStyle): string {
 export const RESET = CSI + '0m'
 
 /** OSC 777 — action executed when a cell is clicked. */
-export function encodeAction(command: string): string {
-  return `\x1b]777;run;${sanitizeText(command)}${ESC_G}`
+export function encodeAction(command: string, copy?: string): string {
+  const kind = copy ? '777;copy' : '777;run'
+  const payload = copy ? sanitizeText(copy) : sanitizeText(command)
+  return `\x1b]${kind};${payload}${ESC_G}`
 }
 
 /** Sanitized, style-wrapped text. The only safe way to print user data. */
-export function styled(text: string, style: CellStyle = {}, action?: string): string {
+export function styled(text: string, style: CellStyle = {}, action?: string, copy?: string): string {
   const body = sanitizeText(text, true)
   if (!body) return ''
-  return encodeStyle(style) + (action ? encodeAction(action) : '') + body + RESET
+  return encodeStyle(style) + (action || copy ? encodeAction(action ?? '', copy) : '') + body + RESET
 }
 
 export const CLEAR_SCREEN = CSI + '2J' + CSI + 'H'

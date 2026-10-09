@@ -13,11 +13,15 @@ export interface Screen {
   key(data: string): void
   click(x: number, y: number): void
   subscribe(listener: () => void): () => void
+  /** Drop a pane; collapses the tree, returns the new focus or null if empty. */
+  closePane(terminal: Terminal): Terminal | null
 }
 
 export type Rect = { x: number; y: number; w: number; h: number }
 
-type Node = { kind: 'leaf'; terminal: Terminal; off: () => void } | { kind: 'group'; dir: 'v' | 'h'; children: Child[] }
+type Node =
+  | { kind: 'leaf'; terminal: Terminal; title: string; off: () => void }
+  | { kind: 'group'; dir: 'v' | 'h'; children: Child[] }
 type Child = { weight: number; node: Node }
 type Parent = { children: Child[] }
 
@@ -107,8 +111,8 @@ export class Display implements Screen {
     this.focus = terminal
   }
 
-  private leaf(terminal: Terminal): Node {
-    return { kind: 'leaf', terminal, off: terminal.onChange(() => this.schedule()) }
+  private leaf(terminal: Terminal, title = ''): Node {
+    return { kind: 'leaf', terminal, title, off: terminal.onChange(() => this.schedule()) }
   }
 
   rootTerminal(): Terminal {
@@ -156,8 +160,35 @@ export class Display implements Screen {
     return list
   }
 
+  /**
+   * Drop a leaf from the tree. A lone child inherits its parent's slot, so a
+   * one-pane group collapses back to that pane. Returns the new focus terminal,
+   * or null when nothing is left on screen.
+   */
+  closePane(target: Terminal): Terminal | null {
+    const found = findLeaf(this.root, target)
+    if (!found || !found.parent) return null
+    const parent = found.parent
+    parent.children.splice(found.index, 1)
+    if (found.node.kind === 'leaf') found.node.off()
+
+    if (parent.children.length === 1) {
+      // Collapse the group: its lone survivor takes the group's own slot.
+      const survivor = parent.children[0].node
+      const spot = findGroupSlot(this.root, parent)
+      if (spot && spot.parent) spot.parent.children[spot.index].node = survivor
+      else this.root = survivor
+    }
+
+    const list = this.terminals()
+    if (list.length === 0) return null
+    if (!list.includes(this.focus)) this.focus = list[0]
+    this.schedule()
+    return this.focus
+  }
+
   /** Replace `target` with a weighted split of fresh terminals. */
-  split(target: Terminal, spec: string, commands: string[]): Terminal[] {
+  split(target: Terminal, spec: string, commands: string[], titles: string[] = []): Terminal[] {
     const layout = parseLayout(spec)
     const leaves = countLeaves(layout)
     if (commands.length > leaves) {
@@ -170,11 +201,12 @@ export class Display implements Screen {
     const created: Terminal[] = []
     const width = this.grid.width
     const height = this.grid.height
+    let titleIndex = 0
     const build = (node: LayoutNode): Node => {
       if (node.kind === 'leaf') {
         const terminal = this.createTerminal(width, height)
         created.push(terminal)
-        return this.leaf(terminal)
+        return this.leaf(terminal, titles[titleIndex++] ?? '')
       }
       return {
         kind: 'group',
@@ -258,7 +290,29 @@ export class Display implements Screen {
     if (rect && cursor.visible && cursor.y < this.focus.grid.height) {
       this.cursor = { x: rect.x + Math.min(cursor.x, Math.max(0, rect.w - 1)), y: rect.y + cursor.y, visible: true }
     }
+    this.drawTitles()
     this.emit()
+  }
+
+  /** Writes `[TITLE]` centered on the top border of every titled pane. */
+  private drawTitles(): void {
+    const titles = new Map<Terminal, string>()
+    walk(this.root, (node) => {
+      if (node.title) titles.set(node.terminal, node.title)
+    })
+    for (const [terminal, title] of titles) {
+      const rect = this.rects.get(terminal)
+      if (!rect || rect.w < 5) continue
+      const label = `[${title}]`
+      const shown = label.slice(0, rect.w - 2)
+      if (shown.length === 0) continue
+      // The top border is the frame for a top-row pane, else the wall above it.
+      const top = rect.y <= 1 ? 0 : rect.y - 1
+      const start = rect.x + Math.max(0, Math.floor((rect.w - shown.length) / 2))
+      for (let i = 0; i < shown.length; i++) {
+        this.grid.set(start + i, top, { char: shown[i], fg: BORDER_FG, bold: true })
+      }
+    }
   }
 
   private layoutNode(node: Node, rect: Rect, mark: (x: number, y: number) => void): void {
@@ -326,11 +380,27 @@ function leafOf(node: Node): Terminal {
   return leafOf(node.children[0].node)
 }
 
-function findLeaf(node: Node, target: Terminal, parent: Parent | null = null, index = 0): { parent: Parent | null; index: number } | null {
-  if (node.kind === 'leaf') return node.terminal === target ? { parent, index } : null
+type LeafSlot = { parent: Parent | null; index: number; node: Node & { kind: 'leaf' } }
+
+function findLeaf(node: Node, target: Terminal, parent: Parent | null = null, index = 0): LeafSlot | null {
+  if (node.kind === 'leaf') return node.terminal === target ? { parent, index, node } : null
   for (let i = 0; i < node.children.length; i++) {
     const found = findLeaf(node.children[i].node, target, node, i)
     if (found) return found
+  }
+  return null
+}
+
+type GroupSlot = { parent: Parent | null; index: number }
+
+/** Locate a group node inside its parent, to splice it out during a collapse. */
+function findGroupSlot(root: Node, group: Parent, parent: Parent | null = null, index = 0): GroupSlot | null {
+  if (root === group) return { parent, index }
+  if (root.kind === 'group') {
+    for (let i = 0; i < root.children.length; i++) {
+      const found = findGroupSlot(root.children[i].node, group, root, i)
+      if (found) return found
+    }
   }
   return null
 }

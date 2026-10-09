@@ -35,8 +35,9 @@ body {
   color: #d6d6db;
   background: #0b0b0d;
   white-space: pre;
-  user-select: none;
-  -webkit-user-select: none;
+  /* Console content must be selectable and copyable. */
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .probe {
@@ -48,13 +49,23 @@ body {
   line-height: 18px;
   visibility: hidden;
   pointer-events: none;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
+/*
+ * A row is exactly one cell tall. `line-height` and `height` share the same
+ * 18px so browser zoom scales them together: measuring the probe and dividing
+ * the container by it stays consistent at any zoom level.
+ */
 .row {
   display: block;
   height: 18px;
+  line-height: 18px;
   overflow: hidden;
   white-space: pre;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .row .act {
@@ -64,3 +75,4 @@ body {
 .row:hover .act:hover {
   text-decoration: underline;
 }
+

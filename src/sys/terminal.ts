@@ -468,8 +468,12 @@ export class TerminalImpl implements Terminal {
     const payload = data.slice(sep + 1)
     const kind = payload.indexOf(';')
     const kindName = kind < 0 ? payload : payload.slice(0, kind)
-    if (kindName !== 'run') return
     const command = kind < 0 ? '' : payload.slice(kind + 1)
+    if (kindName === 'copy') {
+      if (command) this.action = { command: '', copy: command }
+      return
+    }
+    if (kindName !== 'run') return
     if (command) this.action = { command }
   }
 }
