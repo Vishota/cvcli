@@ -16,7 +16,9 @@ import type { CvLang, CvPage } from './cvstore.ts'
  */
 
 // export const CV_OWNER = 'Uladzislau'
-export const CV_PDF_URL = '/cv.pdf'
+// Relative path: Vite copies public/cv.pdf to the site root, and a relative
+// link works both as a GitHub Pages project site and on a custom domain.
+export const CV_PDF_URL = 'cv.pdf'
 
 export const INTRO: Record<CvLang, { text: string[]; pdf: string }> = {
   en: {
@@ -127,7 +129,7 @@ export const PAGES: Record<CvPage, CvPageContent> = {
         '- Ctrl-C — leave the CV screen (a shell takes the pane).',
         '# Commands',
         'The shell below accepts the same commands the buttons here run:',
-        '- cv page main|projects|help|contact|about — open a page.',
+        '- cv page main|skills|help|contact — open a page.',
         '- cv lang en|ru — switch the language.',
         '- cv theme NAME — switch the theme; cv theme next cycles.',
         '- cv scale add|sub — scale the interface up or down.',
@@ -144,7 +146,7 @@ export const PAGES: Record<CvPage, CvPageContent> = {
         '- Ctrl-C — закрыть CV-экран (панель займёт шелл).',
         '# Команды',
         'Шелл снизу принимает те же команды, что выполняют кнопки здесь:',
-        '- cv page main|projects|help|contact|about — открыть страницу.',
+        '- cv page main|skills|help|contact — открыть страницу.',
         '- cv lang en|ru — сменить язык.',
         '- cv theme ИМЯ — сменить тему; cv theme next листает по кругу.',
         '- cv scale add|sub — увеличить или уменьшить интерфейс.',

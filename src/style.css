@@ -88,6 +88,53 @@ body {
   text-decoration: underline;
 }
 
+/* On-screen-keyboard toggle for touch devices: a floating button plus a
+   hidden focus target that summons the soft keyboard. */
+.kbd-input {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font-size: 16px; /* avoids iOS auto-zoom when focused */
+}
+
+.kbd-toggle {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(18, 18, 24, 0.92);
+  color: #d6d6db;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 20;
+  display: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.kbd-toggle.on {
+  background: rgba(38, 82, 130, 0.95);
+  border-color: rgba(120, 180, 255, 0.6);
+  color: #ffffff;
+}
+
+/* Only touch devices get the toggle. */
+@media (pointer: coarse) {
+  .kbd-toggle {
+    display: block;
+  }
+}
+
 /* Phones: a smaller base cell so the split still fits two usable panes. */
 @media (max-width: 640px) {
   #app {

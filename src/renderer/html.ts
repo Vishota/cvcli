@@ -57,6 +57,8 @@ export function createHtmlRenderer(screen: Screen, themes?: ThemeStore): Rendere
   let probe: HTMLElement | null = null
   let rows: HTMLElement[] = []
   let rowCache: string[] = []
+  let kbdInput: HTMLInputElement | null = null
+  let kbdToggle: HTMLButtonElement | null = null
   let observer: ResizeObserver | null = null
   let offChange: (() => void) | null = null
   let offTheme: (() => void) | null = null
@@ -256,6 +258,49 @@ export function createHtmlRenderer(screen: Screen, themes?: ThemeStore): Rendere
       })
   }
 
+  /**
+   * A hidden focus target that summons the on-screen keyboard on touch
+   * devices. Typing bubbles to the global keydown handler, so the input never
+   * accumulates text; the `input` listener is a fallback for soft keyboards
+   * that report key presses as composition instead of keydown.
+   */
+  const installKeyboard = (element: HTMLElement): void => {
+    kbdInput = document.createElement('input')
+    kbdInput.type = 'text'
+    kbdInput.className = 'kbd-input'
+    kbdInput.setAttribute('autocapitalize', 'off')
+    kbdInput.setAttribute('autocorrect', 'off')
+    kbdInput.setAttribute('autocomplete', 'off')
+    kbdInput.setAttribute('spellcheck', 'false')
+    kbdInput.setAttribute('enterkeyhint', 'go')
+    kbdInput.setAttribute('inputmode', 'text')
+
+    kbdToggle = document.createElement('button')
+    kbdToggle.type = 'button'
+    kbdToggle.className = 'kbd-toggle'
+    kbdToggle.textContent = '⌨'
+    kbdToggle.title = 'Show keyboard'
+    kbdToggle.setAttribute('aria-label', 'Toggle on-screen keyboard')
+
+    kbdToggle.addEventListener('click', () => {
+      if (!kbdInput) return
+      if (document.activeElement === kbdInput) kbdInput.blur()
+      else kbdInput.focus()
+    })
+    kbdInput.addEventListener('focus', () => kbdToggle?.classList.add('on'))
+    kbdInput.addEventListener('blur', () => kbdToggle?.classList.remove('on'))
+    kbdInput.addEventListener('input', () => {
+      if (!kbdInput) return
+      const value = kbdInput.value
+      kbdInput.value = ''
+      const cleaned = value.replace(/\r\n?/g, '\r').replace(/[\x00-\x08\x0b-\x1f\x7f]/g, '')
+      if (cleaned) screen.key(cleaned)
+    })
+
+    element.appendChild(kbdInput)
+    element.appendChild(kbdToggle)
+  }
+
   return {
     mount(element: HTMLElement): void {
       container = document.createElement('div')
@@ -281,6 +326,7 @@ export function createHtmlRenderer(screen: Screen, themes?: ThemeStore): Rendere
       container.addEventListener('contextmenu', onContextMenu)
       window.addEventListener('keydown', onKey)
       window.addEventListener('paste', onPaste)
+      installKeyboard(element)
       if (document.fonts) void document.fonts.ready.then(() => fit())
       fit()
     },
@@ -297,6 +343,10 @@ export function createHtmlRenderer(screen: Screen, themes?: ThemeStore): Rendere
       container?.removeEventListener('contextmenu', onContextMenu)
       window.removeEventListener('keydown', onKey)
       window.removeEventListener('paste', onPaste)
+      kbdInput?.remove()
+      kbdToggle?.remove()
+      kbdInput = null
+      kbdToggle = null
       container?.remove()
       container = null
       probe = null

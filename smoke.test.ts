@@ -104,7 +104,7 @@ async function main(): Promise<void> {
   console.log('boot')
   kernel.boot()
   await sleep(20)
-  check('prompt visible', text().includes('[root@smoke-host] $'), text())
+  check('prompt visible', text().includes('[hr@smoke-host] $'), text())
 
   console.log('theme')
   type('theme use neon')
@@ -151,12 +151,12 @@ async function main(): Promise<void> {
   check('man page', text().includes('SYNOPSIS') && text().includes('run=COMMAND'))
 
   console.log('long input line')
-  const promptRowsBefore = text().split('\n').filter((row) => row.includes('root@')).length
+  const promptRowsBefore = text().split('\n').filter((row) => row.includes('hr@')).length
   for (let i = 0; i < 120; i++) kernel.screen.key('Z')
   await sleep(30)
   const typedRows = text().split('\n')
-  const promptRowsAfter = typedRows.filter((row) => row.includes('root@')).length
-  const nearCursor = typedRows.slice(-4).join('\n').split('root@').length - 1
+  const promptRowsAfter = typedRows.filter((row) => row.includes('hr@')).length
+  const nearCursor = typedRows.slice(-4).join('\n').split('hr@').length - 1
   check('typing adds no prompt rows', promptRowsAfter <= promptRowsBefore, `before=${promptRowsBefore} after=${promptRowsAfter}`)
   check('prompt drawn once near cursor', nearCursor === 1, `near=${nearCursor}`)
   const typedZ = text().split('Z').length - 1
@@ -294,6 +294,8 @@ async function main(): Promise<void> {
       textContent: '',
       innerHTML: '',
       style: {},
+      value: '',
+      classList: { add() {}, remove() {} },
       children: [] as any[],
       clientWidth: 800,
       clientHeight: 486,
@@ -307,6 +309,9 @@ async function main(): Promise<void> {
       },
       addEventListener() {},
       removeEventListener() {},
+      setAttribute() {},
+      focus() {},
+      blur() {},
       getBoundingClientRect() {
         return el.className === 'probe'
           ? { width: 80, height: 18, left: 0, top: 0 }
@@ -337,7 +342,7 @@ async function main(): Promise<void> {
   const screenEl = mountPoint.children[0] as Record<string, any>
   const rowCount = screenEl ? screenEl.children.length - 1 : 0 // minus probe
   check('renderer mounts', mounted && rowCount === kernel.screen.grid.height, `rows=${rowCount} grid=${kernel.screen.grid.height}`)
-  const painted = screenEl && screenEl.children.slice(1).some((row: any) => row.innerHTML.includes('root@') || row.innerHTML.includes('│'))
+  const painted = screenEl && screenEl.children.slice(1).some((row: any) => row.innerHTML.includes('hr@') || row.innerHTML.includes('│'))
   check('renderer paints terminal content', !!painted)
   renderer.destroy()
 
@@ -370,7 +375,7 @@ async function main(): Promise<void> {
     check('cvui intro drawn', boot.includes('Uladzislau'))
     check('cvui sidebar drawn', boot.includes('LANGUAGE') && boot.includes('MENU'))
     check('cvui arrows drawn', boot.includes('▲') && boot.includes('▼'))
-    check('shell prompt in bottom pane', boot.includes('[root@cv-host] $'))
+    check('shell prompt in bottom pane', boot.includes('[hr@cv-host] $'))
     check('default page is main', cvStore.get().page === 'main')
 
     // The bottom shell pane holds the focus after a split; drive the store.
@@ -401,14 +406,14 @@ async function main(): Promise<void> {
     let cvClick: { x: number; y: number } | null = null
     for (let y = 0; y < g3.height && !cvClick; y++) {
       for (let x = 0; x < g3.width && !cvClick; x++) {
-        if (g3.get(x, y).action?.command === 'cv page about') cvClick = { x, y }
+        if (g3.get(x, y).action?.command === 'cv page skills') cvClick = { x, y }
       }
     }
     check('cvui menu buttons are clickable', !!cvClick)
     if (cvClick) {
       k3.screen.click(cvClick.x, cvClick.y)
       await sleep(80)
-      check('click switches the page inside cvui', cvStore.get().page === 'about')
+      check('click switches the page inside cvui', cvStore.get().page === 'skills')
     }
 
     // The PDF buttons carry an open action: the renderer opens a new tab.
