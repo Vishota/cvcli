@@ -40,4 +40,4 @@ renderer.mount(root)
 renderer.setScale(SCALE_STEPS[cvStore.get().scale])
 cvStore.subscribe(() => renderer.setScale(SCALE_STEPS[cvStore.get().scale]))
 // Autostart: the CV screen on top, an interactive shell below it.
-kernel.boot('split h2:1 --title "VISHOTA CV" cvui')
+kernel.boot('split h2:1 --title "VISHOTA CV" cvui neofetch')

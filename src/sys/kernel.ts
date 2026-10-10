@@ -39,8 +39,8 @@ type Proc = {
   startedAt: number
 }
 
-const OS_NAME = 'VISHOTA OS'
-const OS_VERSION = '0.1.0'
+const OS_NAME = 'CVOS'
+const OS_VERSION = '0.6.7'
 const ERR_FG = { type: 'ansi', value: 1 } as const
 
 export class KernelImpl implements Kernel {
