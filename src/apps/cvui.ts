@@ -151,9 +151,9 @@ function button(label: string, active: boolean, action: string): string {
     : styled(text, {}, action)
 }
 
-/** The theme cycler: ‹ name › steps through every known theme. */
+/** The theme cycler: < name > steps through every known theme. */
 function cycler(name: string): string {
-  return styled(`‹ ${name} ›`, { fg: COLORS.cyan, bold: true }, 'cv theme next')
+  return styled(`< ${name} >`, { fg: COLORS.cyan, bold: true }, 'cv theme next')
 }
 
 /** The [L] [D] [N] [B] quick-theme buttons (the favorites). */
