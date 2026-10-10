@@ -142,8 +142,9 @@ export class Display implements Screen {
     if (!target) return
     const cell = this.grid.get(x, y)
     // A click runs the same command a user would type, in the pane that was
-    // clicked — the pane owns the link, so it owns the command too.
-    if (cell.action) target.stdin.write(`\r${cell.action.command}\r`)
+    // clicked — the pane owns the link, so it owns the command too. Copy and
+    // open cells carry no command: only the renderer can act on them.
+    if (cell.action?.command) target.stdin.write(`\r${cell.action.command}\r`)
     this.focus = target
     this.schedule()
   }

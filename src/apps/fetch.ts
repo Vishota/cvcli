@@ -13,7 +13,7 @@ const LOGO = [
 const LOGO_WIDTH = LOGO.reduce((max, line) => Math.max(max, line.length), 0)
 
 /** Color one logo line char by char through a left-to-right gradient. */
-function gradientLine(line: string, ramp: string[], boldGlyphs: boolean): string {
+export function gradientLine(line: string, ramp: string[], boldGlyphs: boolean): string {
   let out = ''
   let i = 0
   for (const ch of line) {

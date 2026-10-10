@@ -1,5 +1,6 @@
 import './style.css'
 import { applications } from './apps/index.ts'
+import { cvStore, SCALE_STEPS } from './apps/cvstore.ts'
 import { createHtmlRenderer } from './renderer/html.ts'
 import { KernelImpl, type KernelHost } from './sys/kernel.ts'
 
@@ -35,4 +36,8 @@ if (!root) throw new Error('missing #app element')
 
 const renderer = createHtmlRenderer(kernel.screen, kernel.themes)
 renderer.mount(root)
-kernel.boot('neofetch')
+// The SCALE buttons drive the whole page: the cell size follows the ladder.
+renderer.setScale(SCALE_STEPS[cvStore.get().scale])
+cvStore.subscribe(() => renderer.setScale(SCALE_STEPS[cvStore.get().scale]))
+// Autostart: the CV screen on top, an interactive shell below it.
+kernel.boot('split h2:1 --title "VISHOTA CV" cvui')

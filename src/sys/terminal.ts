@@ -249,6 +249,24 @@ export class TerminalImpl implements Terminal {
 
     let start = 0
     let total = lines.reduce((sum, line) => sum + rowsOf(line), 0)
+    // Wrapping inflates the layout; blank lines go first — spacing disappears
+    // before content does. The cursor's own line never counts as blank.
+    while (total > newRows && lines.length > 1) {
+      let blank = -1
+      let bestDist = -1
+      for (let i = 0; i < lines.length; i++) {
+        if (i === cursorLine || !isBlankLine(lines[i])) continue
+        const dist = Math.abs(i - cursorLine)
+        if (dist > bestDist) {
+          bestDist = dist
+          blank = i
+        }
+      }
+      if (blank < 0) break
+      total -= 1
+      lines.splice(blank, 1)
+      if (blank < cursorLine) cursorLine--
+    }
     while (total > newRows && start < lines.length - 1) {
       total -= rowsOf(lines[start])
       if (cursorLine <= start) {
@@ -306,29 +324,51 @@ export class TerminalImpl implements Terminal {
     this.wrapPending = false
   }
 
-  /** Height-only change: keep the bottom rows (the prompt lives there). */
+  /**
+   * Height-only change. Blank rows go first — shrinking eats invisible
+   * padding before it eats content — then the oldest rows (the prompt lives
+   * at the bottom).
+   */
   private reflowHeight(newRows: number): void {
     const oldRows = this.rows
     if (newRows < oldRows) {
       const drop = oldRows - newRows
+      // The last row that must survive: one with content, or the cursor's own.
+      let last = -1
+      for (let y = 0; y < oldRows; y++) {
+        if (y === this.cursor.y || this.rowHasContent(y)) last = y
+      }
+      const blanksBelow = Math.max(0, oldRows - 1 - last)
+      const fromBottom = Math.min(drop, blanksBelow)
+      const fromTop = drop - fromBottom
+      const end = oldRows - fromBottom
       const kept: Cell[][] = []
-      for (let y = drop; y < oldRows; y++) {
+      for (let y = fromTop; y < end; y++) {
         const row: Cell[] = []
         for (let x = 0; x < this.cols; x++) row.push(this.grid.get(x, y))
         kept.push(row)
       }
-      const keptFlags = this.wrapped.slice(drop, oldRows)
+      const keptFlags = this.wrapped.slice(fromTop, end)
       this.grid.resize(this.cols, newRows)
       for (let i = 0; i < kept.length; i++) {
         for (let x = 0; x < kept[i].length; x++) this.grid.set(x, i, kept[i][x])
       }
       this.wrapped = keptFlags
-      this.cursor.y -= drop
+      this.cursor.y -= fromTop
       if (this.cursor.y < 0) this.cursor.y = 0
+      if (this.cursor.y > newRows - 1) this.cursor.y = newRows - 1
     } else if (newRows > oldRows) {
       this.grid.resize(this.cols, newRows)
       while (this.wrapped.length < newRows) this.wrapped.push(false)
     }
+  }
+
+  private rowHasContent(y: number): boolean {
+    for (let x = 0; x < this.cols; x++) {
+      const cell = this.grid.get(x, y)
+      if (cell.char !== ' ' || cell.bg || cell.action) return true
+    }
+    return false
   }
   private csi(final: string): void {
     const body = this.buf
@@ -473,6 +513,10 @@ export class TerminalImpl implements Terminal {
       if (command) this.action = { command: '', copy: command }
       return
     }
+    if (kindName === 'open') {
+      if (command) this.action = { command: '', open: command }
+      return
+    }
     if (kindName !== 'run') return
     if (command) this.action = { command }
   }
@@ -506,5 +550,10 @@ function readColor(code: number, list: string[], index: number): { slot: 'fg' | 
 function withBg(cell: Cell): Cell {
   if (cell.bg) return cell
   return { ...cell, bg: cell.fg ?? { type: 'ansi', value: 7 } }
+}
+
+/** A line of nothing but default-background spaces: padding, not content. */
+function isBlankLine(line: Cell[]): boolean {
+  return line.length === 0 || line.every((cell) => cell.char === ' ' && !cell.bg && !cell.action)
 }
 

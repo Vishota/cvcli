@@ -16,6 +16,8 @@ export type CellAction = {
   command: string
   /** Text placed on the clipboard instead of running a command, when present. */
   copy?: string
+  /** URL opened in a new tab instead of running a command, when present. */
+  open?: string
 }
 
 export type Cell = CellStyle & {

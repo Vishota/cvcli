@@ -87,6 +87,24 @@ const BUILTIN: ThemeSpec[] = [
       '#5a5a5a', '#a0a0a0', '#d0d0d0', '#ffffff', '#888888', '#b8b8b8', '#c8c8c8', '#ffffff',
     ],
   },
+  {
+    name: 'light',
+    fg: '#24292e',
+    bg: '#f6f8fa',
+    colors: [
+      '#1f2328', '#cf222e', '#116329', '#9a6700', '#0969da', '#8250df', '#1b7c83', '#57606a',
+      '#8c959f', '#a40e26', '#1a7f37', '#bb8009', '#218bff', '#a371f7', '#3192aa', '#24292e',
+    ],
+  },
+  {
+    name: 'bimbo',
+    fg: '#ffe9f4',
+    bg: '#2a0a1e',
+    colors: [
+      '#4a1030', '#ff2d78', '#9ff5c4', '#ffd76e', '#7cc7ff', '#ff5ec4', '#8be9fd', '#fff0f8',
+      '#b06a96', '#ff6ba6', '#b2ffc8', '#ffe39a', '#a8dcff', '#ff9ad9', '#c8f0ff', '#ffffff',
+    ],
+  },
 ]
 
 /**

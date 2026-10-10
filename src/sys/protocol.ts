@@ -56,11 +56,28 @@ export function encodeAction(command: string, copy?: string): string {
   return `\x1b]${kind};${payload}${ESC_G}`
 }
 
+/** OSC 777 — a URL opened in a new tab when a cell is clicked. */
+export function encodeOpen(url: string): string {
+  return `\x1b]777;open;${sanitizeText(url)}${ESC_G}`
+}
+
 /** Sanitized, style-wrapped text. The only safe way to print user data. */
-export function styled(text: string, style: CellStyle = {}, action?: string, copy?: string): string {
+export function styled(
+  text: string,
+  style: CellStyle = {},
+  action?: string,
+  copy?: string,
+  open?: string,
+): string {
   const body = sanitizeText(text, true)
   if (!body) return ''
-  return encodeStyle(style) + (action || copy ? encodeAction(action ?? '', copy) : '') + body + RESET
+  return (
+    encodeStyle(style) +
+    (action || copy ? encodeAction(action ?? '', copy) : '') +
+    (open ? encodeOpen(open) : '') +
+    body +
+    RESET
+  )
 }
 
 export const CLEAR_SCREEN = CSI + '2J' + CSI + 'H'

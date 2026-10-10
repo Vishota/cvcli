@@ -1,5 +1,7 @@
 import type { Application } from '../app.ts'
 import { clear } from './clear.ts'
+import { cv } from './cv.ts'
+import { cvui } from './cvui.ts'
 import { echo } from './echo.ts'
 import { fetch, neofetch } from './fetch.ts'
 import { help } from './help.ts'
@@ -23,6 +25,8 @@ export const applications: Application[] = [
   ps,
   kill,
   split,
+  cvui,
+  cv,
   theme,
   reboot,
   shutdown,

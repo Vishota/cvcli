@@ -178,7 +178,9 @@ function visibleLength(text: string): number {
 }
 
 async function interactive(context: ApplicationContext): Promise<number> {
-  const hostname = sanitizeText(context.sys.info().host.hostname || 'localhost')
+  const rawHost = sanitizeText(context.sys.info().host.hostname || '')
+  // The deployment host is the product name; localhost is a dev session.
+  const hostname = rawHost || 'localhost'
   /** Printable length of the current prompt render; anchor for redraws. */
   let renderLen = 0
   const out = (text: string): void => {
@@ -201,12 +203,10 @@ async function interactive(context: ApplicationContext): Promise<number> {
 
   const prompt = (): string =>
     '[' +
-    styled('guest', { fg: COLORS.green, bold: true }) +
+    styled('hr', { fg: COLORS.green, bold: true }) +
     '@' +
     styled(hostname, { fg: COLORS.cyan, bold: true }) +
-    ' ' +
-    styled('~', { fg: COLORS.blue, bold: true }) +
-    ']$ '
+    '] $ '
 
   /**
    * Rewrites the input line. Moves up exactly the rows the previous render

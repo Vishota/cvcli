@@ -16,6 +16,7 @@ export const COLORS = {
   brightYellow: { type: 'ansi', value: 11 },
   brightBlue: { type: 'ansi', value: 12 },
   brightCyan: { type: 'ansi', value: 14 },
+  brightWhite: { type: 'ansi', value: 15 },
 } satisfies Record<string, Color>
 
 export function bold(text: string): string {
@@ -33,6 +34,16 @@ export function error(text: string): string {
 /** Clickable text: the cell carries the command, the click feeds the shell. */
 export function link(text: string, command: string): string {
   return styled(text, { fg: COLORS.blue, underline: true }, command)
+}
+
+/** Click-to-copy text: the cell carries the payload, the click copies it. */
+export function copyLink(text: string, payload: string): string {
+  return styled(text, { fg: COLORS.blue, underline: true }, '', payload)
+}
+
+/** Click-to-open text: the cell carries the URL, the click opens a new tab. */
+export function openLink(text: string, url: string): string {
+  return styled(text, { fg: COLORS.blue, underline: true }, undefined, undefined, url)
 }
 
 export function pad(text: string, width: number): string {

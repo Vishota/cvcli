@@ -17,6 +17,7 @@ body,
 
 body {
   overflow: hidden;
+  overscroll-behavior: none;
 }
 
 #app {
@@ -29,15 +30,19 @@ body {
   height: 100%;
   overflow: hidden;
   font-family: 'Cascadia Code', 'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace;
-  font-size: 14px;
+  /* The SCALE controls multiply this one size; every metric below is in em,
+     so the whole grid geometry scales with it exactly. */
+  font-size: calc(14px * var(--cv-scale, 1));
   font-variant-ligatures: none;
-  line-height: 18px;
+  line-height: 1.2857;
   color: #d6d6db;
   background: #0b0b0d;
   white-space: pre;
   /* Console content must be selectable and copyable. */
   user-select: text;
   -webkit-user-select: text;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .probe {
@@ -45,8 +50,8 @@ body {
   top: 0;
   left: 0;
   display: inline-block;
-  height: 18px;
-  line-height: 18px;
+  height: 1.2857em;
+  line-height: 1.2857;
   visibility: hidden;
   pointer-events: none;
   user-select: text;
@@ -54,14 +59,15 @@ body {
 }
 
 /*
- * A row is exactly one cell tall. `line-height` and `height` share the same
- * 18px so browser zoom scales them together: measuring the probe and dividing
- * the container by it stays consistent at any zoom level.
+ * A row is exactly one cell tall. Row height and line-height are the same
+ * 1.2857em, so browser zoom and the SCALE ladder scale them together with the
+ * probe: measuring the probe and dividing the container by it stays
+ * consistent at any size.
  */
 .row {
   display: block;
-  height: 18px;
-  line-height: 18px;
+  height: 1.2857em;
+  line-height: 1.2857;
   overflow: hidden;
   white-space: pre;
   user-select: text;
@@ -72,7 +78,25 @@ body {
   cursor: pointer;
 }
 
+/* An open cell is a real anchor; its color comes from the inline style,
+   this only disarms the browser's default link look. */
+.row a.act {
+  color: inherit;
+}
+
 .row:hover .act:hover {
   text-decoration: underline;
 }
+
+/* Phones: a smaller base cell so the split still fits two usable panes. */
+@media (max-width: 640px) {
+  #app {
+    padding: 2px 3px;
+  }
+
+  .screen {
+    font-size: calc(12px * var(--cv-scale, 1));
+  }
+}
+
 

@@ -5,6 +5,8 @@ import type { ThemeStore } from '../sys/theme.ts'
 export interface Renderer {
   mount(element: HTMLElement): void
   destroy(): void
+  /** Cell-size multiplier (the SCALE ladder); the grid re-fits to it. */
+  setScale(factor: number): void
 }
 
 const STEPS = [0, 95, 135, 175, 215, 255]
@@ -14,17 +16,23 @@ function esc(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
+/** Escape a URL for an HTML attribute value. */
+function escAttr(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
 function styleKey(style: CellStyle, action: CellAction | undefined, cursor: boolean): string {
-  return JSON.stringify([style.fg, style.bg, style.bold, style.underline, action?.command, cursor])
+  return JSON.stringify([style.fg, style.bg, style.bold, style.underline, action?.command, action?.open, action?.copy, cursor])
 }
 
 /**
  * Paint one run of same-styled cells. The cursor is a real block: it swaps the
  * cell's foreground and background so the glyph underneath stays readable. A
  * filter would invert the page background too, which on a dark screen makes
- * the cursor vanish.
+ * the cursor vanish. An open action becomes a real anchor, so the browser
+ * handles the click natively: new tab, middle click, long-press menu.
  */
-function renderRun(fg: string | undefined, bg: string | undefined, dFg: string, dBg: string, style: CellStyle, action: CellAction | undefined, text: string, cursor: boolean): string {
+function renderRun(fg: string | undefined, bg: string | undefined, dFg: string, dBg: string, style: CellStyle, action: CellAction | undefined, openUrl: string | undefined, text: string, cursor: boolean): string {
   const parts: string[] = []
   if (cursor) {
     parts.push(`color:${bg ?? dBg}`, `background:${fg ?? dFg}`)
@@ -36,6 +44,9 @@ function renderRun(fg: string | undefined, bg: string | undefined, dFg: string, 
   if (style.bold) parts.push('font-weight:700')
   if (style.underline) parts.push('text-decoration:underline')
   const attrs = parts.length ? ` style="${parts.join(';')}"` : ''
+  if (openUrl) {
+    return `<a class="act"${attrs} href="${escAttr(openUrl)}" target="_blank" rel="noopener noreferrer">${esc(text)}</a>`
+  }
   const cls = action ? ' class="act"' : ''
   return `<span${cls}${attrs}>${esc(text)}</span>`
 }
@@ -52,6 +63,7 @@ export function createHtmlRenderer(screen: Screen, themes?: ThemeStore): Rendere
   let frame = 0
   let cellWidth = 8
   let cellHeight = 16
+  let scale = 1
 
   const defaultFg = (): string => themes?.current.fg ?? '#d6d6db'
   const defaultBg = (): string => themes?.current.bg ?? '#0b0b0d'
@@ -98,13 +110,14 @@ export function createHtmlRenderer(screen: Screen, themes?: ThemeStore): Rendere
     let key = ''
     let style: CellStyle = {}
     let action: CellAction | undefined
+    let openUrl: string | undefined
     let cursorCell = false
     let open = false
 
     const flush = (): void => {
       const fg = cssColor(style.fg)
       const bg = cssColor(style.bg)
-      html += renderRun(fg, bg, defaultFg(), defaultBg(), style, action, buf, cursorCell)
+      html += renderRun(fg, bg, defaultFg(), defaultBg(), style, action, openUrl, buf, cursorCell)
       buf = ''
       open = false
     }
@@ -117,6 +130,7 @@ export function createHtmlRenderer(screen: Screen, themes?: ThemeStore): Rendere
       if (!open) {
         style = { fg: cell.fg, bg: cell.bg, bold: cell.bold, underline: cell.underline }
         action = cell.action
+        openUrl = cell.action?.open
         cursorCell = isCursor
         key = nextKey
         open = true
@@ -155,6 +169,15 @@ export function createHtmlRenderer(screen: Screen, themes?: ThemeStore): Rendere
     const x = Math.floor((event.clientX - rect.left) / cellWidth)
     const y = Math.floor((event.clientY - rect.top) / cellHeight)
     if (x < 0 || y < 0) return
+    const cell = screen.grid.get(x, y)
+    // An open cell is a real anchor: the browser already handled the click
+    // (left click, middle click, long press) — nothing left to do here.
+    if (cell.action?.open) return
+    // A copy cell hands its payload to the clipboard instead of the shell.
+    if (cell.action?.copy) {
+      void copyText(cell.action.copy)
+      return
+    }
     screen.click(x, y)
   }
 
@@ -179,6 +202,18 @@ export function createHtmlRenderer(screen: Screen, themes?: ThemeStore): Rendere
     }
   }
 
+  /**
+   * The SCALE controls: one CSS variable multiplies the base font size, and
+   * every metric below it is in em — so the probe re-measures the new cell
+   * size and the grid re-fits exactly.
+   */
+  const applyScale = (): void => {
+    if (!container) return
+    const style = container.style as CSSStyleDeclaration & { setProperty?: (name: string, value: string) => void }
+    if (typeof style.setProperty === 'function') style.setProperty('--cv-scale', String(scale))
+    fit()
+  }
+
   /** The screen as plain text, for copy / selection. */
   const selectionText = (): string => {
     const grid = screen.grid
@@ -200,8 +235,11 @@ export function createHtmlRenderer(screen: Screen, themes?: ThemeStore): Rendere
   }
 
   // Right-click behaves like most consoles: a selection is copied, otherwise
-  // whatever is on the clipboard is pasted into the focused pane.
+  // whatever is on the clipboard is pasted into the focused pane. A real
+  // link keeps the browser's own menu (open in new tab, copy link address).
   const onContextMenu = (event: MouseEvent): void => {
+    const target = event.target as HTMLElement | null
+    if (target && typeof target.closest === 'function' && target.closest('a')) return
     event.preventDefault()
     const selected = window.getSelection?.()?.toString() ?? ''
     if (selected) {
@@ -228,6 +266,7 @@ export function createHtmlRenderer(screen: Screen, themes?: ThemeStore): Rendere
       container.appendChild(probe)
       element.appendChild(container)
       applyTheme()
+      applyScale()
 
       offChange = screen.subscribe(schedule)
       offTheme = themes?.subscribe(() => {
@@ -244,6 +283,10 @@ export function createHtmlRenderer(screen: Screen, themes?: ThemeStore): Rendere
       window.addEventListener('paste', onPaste)
       if (document.fonts) void document.fonts.ready.then(() => fit())
       fit()
+    },
+    setScale(factor: number): void {
+      scale = factor
+      applyScale()
     },
     destroy(): void {
       if (frame) cancelAnimationFrame(frame)
