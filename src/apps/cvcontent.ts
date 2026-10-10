@@ -25,6 +25,8 @@ export const INTRO: Record<CvLang, { text: string[]; pdf: string }> = {
     text: [
       `Hi! My name is Uladzislau.`,
       'I am a Fullstack Node.js Developer and this app is my CV.',
+      'I am currently actively looking for a job.',
+      '',
     ],
     pdf: 'If you do not appreciate this interface, you should see',
   },
@@ -32,6 +34,8 @@ export const INTRO: Record<CvLang, { text: string[]; pdf: string }> = {
     text: [
       `Привет! Меня зовут Владислав.`,
       'Я Fullstack Node.js разработчик, и это приложение — моё CV.',
+      'Сейчас я нахожусь в активном поиске работы',
+      '',
     ],
     pdf: 'Если вам не нравится этот интерфейс, посмотрите',
   },
@@ -140,11 +144,14 @@ export const PAGES: Record<CvPage, CvPageContent> = {
     title: { en: 'Help', ru: 'Помощь' },
     body: {
       en: [
+        'Brief information about this software is located here.',
+        '',
         '# Keys',
         '- Up / Down — scroll the page one line.',
         '- PageUp / PageDown — scroll by ten lines.',
         '- Home / End — jump to the top or the bottom.',
         '- Ctrl-C — leave the CV screen (a shell takes the pane).',
+        '',
         '# Commands',
         'The shell below accepts the same commands the buttons here run:',
         '- cv page main|skills|help|contact — open a page.',
@@ -157,11 +164,15 @@ export const PAGES: Record<CvPage, CvPageContent> = {
         'split, kill and ps manage panes and processes. Clicking a link in any pane runs its command in that pane. Try split v1:1 "neofetch" "ps" in the shell below.',
       ],
       ru: [
+        'Здесь расположена краткая информация об этой системе.',
+        '',
         '# Клавиши',
+        '',
         '- Вверх / Вниз — прокрутить страницу на строку.',
         '- PageUp / PageDown — прокрутить на десять строк.',
         '- Home / End — в начало или в конец.',
         '- Ctrl-C — закрыть CV-экран (панель займёт шелл).',
+        '',
         '# Команды',
         'Шелл снизу принимает те же команды, что выполняют кнопки здесь:',
         '- cv page main|skills|help|contact — открыть страницу.',
