@@ -5,6 +5,7 @@ import { cvui } from './src/apps/cvui.ts'
 import { echo, formatEcho } from './src/apps/echo.ts'
 import { fetch, neofetch } from './src/apps/fetch.ts'
 import { help } from './src/apps/help.ts'
+import { intro } from './src/apps/intro.ts'
 import { man } from './src/apps/man.ts'
 import { kill, ps } from './src/apps/ps.ts'
 import { reboot } from './src/apps/reboot.ts'
@@ -27,7 +28,7 @@ function check(name: string, condition: boolean, extra?: string): void {
   }
 }
 
-const applications: Application[] = [shell, help, man, echo, clear, fetch, neofetch, ps, kill, split, reboot, theme, cv, cvui]
+const applications: Application[] = [shell, help, man, echo, clear, fetch, neofetch, ps, kill, split, intro, reboot, theme, cv, cvui]
 const kernel = new KernelImpl({
   applications,
   host: { reboot: () => {}, shutdown: () => {}, describe: () => ({ hostname: 'smoke-host', runtime: 'node' }) },
@@ -435,6 +436,37 @@ async function main(): Promise<void> {
     const anchor = !!screenEl2 && screenEl2.children.slice(1).some((row: any) => String(row.innerHTML).includes(`href="${CV_PDF_URL}"`))
     check('pdf renders as a real anchor', anchor)
     renderer2.destroy()
+  }
+
+  console.log('intro animation (isolated kernel)')
+  {
+    const k4 = new KernelImpl({
+      applications,
+      host: { reboot: () => {}, shutdown: () => {}, describe: () => ({ hostname: 'intro-host', runtime: 'node' }) },
+    })
+    const shot = (): string => {
+      const grid = k4.screen.grid
+      const rows: string[] = []
+      for (let y = 0; y < grid.height; y++) {
+        let line = ''
+        for (let x = 0; x < grid.width; x++) line += grid.get(x, y).char
+        rows.push(line)
+      }
+      return rows.join('\n')
+    }
+    k4.boot('intro split h2:1 --title "VISHOTA CV" cvui')
+    await sleep(350)
+    check('intro wordmark drawn', shot().includes('8888'))
+    k4.screen.key('x') // any key skips the animation
+    // cvui spawns through a shell chain; poll instead of a fixed sleep.
+    let after = ''
+    for (let i = 0; i < 20 && !after.includes('PDF version'); i++) {
+      await sleep(100)
+      after = shot()
+    }
+    check('intro skip opens the cv split', k4.screen.terminals().length === 2, `panes=${k4.screen.terminals().length}`)
+    // Language-agnostic: the PDF button exists in both en and ru layouts.
+    check('cvui takes over after intro', after.includes('PDF version'), after.split('\n').slice(0, 4).join(' / '))
   }
 
   console.log('exit closes panes, then halts')

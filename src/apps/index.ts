@@ -5,6 +5,7 @@ import { cvui } from './cvui.ts'
 import { echo } from './echo.ts'
 import { fetch, neofetch } from './fetch.ts'
 import { help } from './help.ts'
+import { intro } from './intro.ts'
 import { man } from './man.ts'
 import { kill, ps } from './ps.ts'
 import { reboot } from './reboot.ts'
@@ -25,6 +26,7 @@ export const applications: Application[] = [
   ps,
   kill,
   split,
+  intro,
   cvui,
   cv,
   theme,

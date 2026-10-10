@@ -80,8 +80,8 @@ async function runLines(lines: string[]): Promise<void> {
 
 function interactive(): void {
   fit()
-  // Autostart, same as the web build: the CV screen on top, a shell below.
-  kernel.boot('split h2:1 --title "VISHOTA CV" cvui')
+  // Autostart, same as the web build: intro animation, then the CV split.
+  kernel.boot('intro split h2:1 --title "VISHOTA CV" cvui neofetch')
   process.stdout.write(frameAnsi())
   screen.subscribe(() => process.stdout.write(frameAnsi()))
   process.stdout.on('resize', () => {
