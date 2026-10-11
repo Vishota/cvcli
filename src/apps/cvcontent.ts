@@ -23,18 +23,14 @@ export const CV_PDF_URL = 'cv.pdf'
 export const INTRO: Record<CvLang, { text: string[]; pdf: string }> = {
   en: {
     text: [
-      `Hi! My name is Uladzislau.`,
-      'I am a Fullstack Node.js Developer and this app is my CV.',
-      'I am currently actively looking for a job.',
+      'This app is my CLI-styled CV.',
       '',
     ],
     pdf: 'If you do not appreciate this interface, you should see',
   },
   ru: {
     text: [
-      `Привет! Меня зовут Владислав.`,
-      'Я Fullstack Node.js разработчик, и это приложение — моё CV.',
-      'Сейчас я нахожусь в активном поиске работы',
+      'Это приложение — моё CV в стиле CLI.',
       '',
     ],
     pdf: 'Если вам не нравится этот интерфейс, посмотрите',
@@ -51,7 +47,9 @@ export const PAGES: Record<CvPage, CvPageContent> = {
     title: { en: 'Main', ru: 'Главная' },
     body: {
       en: [
+        `Hi! My name is Uladzislau.`,
         'I have a lot of commercial and non-commercial experience developing precise, reliable, supportable and complex systems using JS stack.',
+        'I am currently actively looking for a job.',
         '',
         'My typical project\'s stack:',
         '- Node.js',
@@ -70,7 +68,9 @@ export const PAGES: Record<CvPage, CvPageContent> = {
         'Feel free to contact! Telegram: @vishota.'
       ],
       ru: [
+        `Привет! Меня зовут Владислав.`,
         'Имею большой коммерческий и некоммерческий опыт разработки точных, надёжных, поддерживаемых и сложных систем на стеке JS.',
+        'Сейчас я нахожусь в активном поиске работы',
         '',
         'Стек моего типичного проекта:',
         '- Node.js',
