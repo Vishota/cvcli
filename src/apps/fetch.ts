@@ -57,7 +57,7 @@ function hints(): string {
     dim('try: ') +
     link('help', 'help') +
     dim('  ') +
-    link('man', 'man') +
+    link('ps', 'ps') +
     dim('  ') +
     link('split v3:1', 'split v3:1 "neofetch" "ps"') +
     '\n'
