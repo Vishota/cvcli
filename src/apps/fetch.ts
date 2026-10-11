@@ -59,7 +59,7 @@ function hints(): string {
     dim('  ') +
     link('ps', 'ps') +
     dim('  ') +
-    link('split v3:1', 'split v3:1 "neofetch" "ps"') +
+    link('echo', 'echo [color=red]Lorem ipsum[/] sit [color=green]dolor[/] amet') +
     '\n'
   )
 }
