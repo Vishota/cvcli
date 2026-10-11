@@ -388,7 +388,7 @@ async function main(): Promise<void> {
     type3('cv lang ru')
     await sleep(60)
     check('cv switches language', cvStore.get().lang === 'ru')
-    check('cvui speaks russian', screenText().includes('Привет'))
+    check('cvui speaks russian', screenText().includes('Клавиши'))
     const scaleBefore = cvStore.get().scale
     type3('cv scale add')
     await sleep(60)
