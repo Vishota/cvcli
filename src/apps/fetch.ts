@@ -4,11 +4,11 @@ import { bold, dim, link } from './ui.ts'
 
 // Compact unicode-block wordmark, 5 rows x 10 columns.
 const LOGO = [
-  ' ▄▄·  ▌ ▐·',
-  '▐█ ▌▪▪█·█▌',
-  '██ ▄▄▐█▐█•',
-  '▐███▌ ███ ',
-  '·▀▀▀ . ▀  ',
+  '  ▄▄·  ▌ ▐·',
+  ' ▐█ ▌▪▪█·█▌',
+  ' ██ ▄▄▐█▐█•',
+  ' ▐███▌ ███ ',
+  ' ·▀▀▀ . ▀  ',
 ]
 const LOGO_WIDTH = LOGO.reduce((max, line) => Math.max(max, line.length), 0)
 
