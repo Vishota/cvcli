@@ -4,6 +4,7 @@ import { cv } from './cv.ts'
 import { cvui } from './cvui.ts'
 import { echo } from './echo.ts'
 import { fetch, neofetch } from './fetch.ts'
+import { gravity } from './gravity.ts'
 import { help } from './help.ts'
 import { intro } from './intro.ts'
 import { man } from './man.ts'
@@ -30,6 +31,7 @@ export const applications: Application[] = [
   cvui,
   cv,
   theme,
+  gravity,
   reboot,
   shutdown,
 ]

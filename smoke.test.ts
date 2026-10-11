@@ -4,6 +4,7 @@ import { cv } from './src/apps/cv.ts'
 import { cvui } from './src/apps/cvui.ts'
 import { echo, formatEcho } from './src/apps/echo.ts'
 import { fetch, neofetch } from './src/apps/fetch.ts'
+import { gravity } from './src/apps/gravity.ts'
 import { help } from './src/apps/help.ts'
 import { intro } from './src/apps/intro.ts'
 import { man } from './src/apps/man.ts'
@@ -28,7 +29,7 @@ function check(name: string, condition: boolean, extra?: string): void {
   }
 }
 
-const applications: Application[] = [shell, help, man, echo, clear, fetch, neofetch, ps, kill, split, intro, reboot, theme, cv, cvui]
+const applications: Application[] = [shell, help, man, echo, clear, fetch, neofetch, ps, kill, split, intro, reboot, theme, gravity, cv, cvui]
 const kernel = new KernelImpl({
   applications,
   host: { reboot: () => {}, shutdown: () => {}, describe: () => ({ hostname: 'smoke-host', runtime: 'node' }) },
@@ -467,6 +468,48 @@ async function main(): Promise<void> {
     check('intro skip opens the cv split', k4.screen.terminals().length === 2, `panes=${k4.screen.terminals().length}`)
     // Language-agnostic: the PDF button exists in both en and ru layouts.
     check('cvui takes over after intro', after.includes('PDF version'), after.split('\n').slice(0, 4).join(' / '))
+  }
+
+  console.log('gravity easter egg (isolated kernel)')
+  {
+    const k5 = new KernelImpl({
+      applications,
+      host: { reboot: () => {}, shutdown: () => {}, describe: () => ({ hostname: 'g-host', runtime: 'node' }) },
+    })
+    k5.boot()
+    await sleep(20)
+    const shot5 = (): string => {
+      const grid = k5.screen.grid
+      const rows: string[] = []
+      for (let y = 0; y < grid.height; y++) {
+        let line = ''
+        for (let x = 0; x < grid.width; x++) line += grid.get(x, y).char
+        rows.push(line)
+      }
+      return rows.join('\n')
+    }
+    const type5 = (line: string): void => {
+      for (const ch of line) k5.screen.key(ch)
+      k5.screen.key('\r')
+    }
+    type5('echo gravity-marker')
+    await sleep(40)
+    check('marker on screen before the fall', shot5().includes('gravity-marker'))
+    type5('gravity')
+    // The fall empties the screen bottom-up: the prompt row drops first.
+    let crumbled = false
+    for (let i = 0; i < 10 && !crumbled; i++) {
+      await sleep(60)
+      crumbled = !shot5().includes('[hr@g-host] $')
+    }
+    check('gravity crumbles the screen', crumbled)
+    let restored = ''
+    for (let i = 0; i < 40 && !restored.includes('gravity-marker'); i++) {
+      await sleep(100)
+      restored = shot5()
+    }
+    check('gravity restores the screen', restored.includes('gravity-marker'), restored.split('\n').find((l) => l.trim()))
+    check('gravity hands back a fresh prompt', restored.includes('[hr@g-host] $'))
   }
 
   console.log('exit closes panes, then halts')
