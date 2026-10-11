@@ -13,7 +13,7 @@ const scaleText = (index: number): string => `${Math.round(SCALE_STEPS[index] * 
 
 const USAGE = [
   'usage:',
-  '  cv page main|skills|help|contact|next|prev',
+  '  cv page main|skills|experience|help|contact|next|prev',
   '  cv lang en|ru',
   '  cv theme NAME|next',
   '  cv scale add|sub|PERCENT',
