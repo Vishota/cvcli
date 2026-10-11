@@ -124,6 +124,13 @@ body {
 
 /* Real text kept in the DOM for crawlers and screen readers; the terminal
    takes over the visuals. */
+/* The full CV text lives in the HTML for crawlers, screen readers and
+   no-JS visitors; once the app boots (html.js), the terminal takes over
+   the whole viewport and the static copy is hidden. */
+html.js #cv-static {
+  display: none;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
