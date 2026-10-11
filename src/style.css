@@ -122,6 +122,18 @@ body {
   text-decoration: underline;
 }
 
+/* Real text kept in the DOM for crawlers and screen readers; the terminal
+   takes over the visuals. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* On-screen-keyboard toggle for touch devices: a floating button plus a
    hidden focus target that summons the soft keyboard. */
 .kbd-input {

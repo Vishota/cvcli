@@ -3,6 +3,7 @@ import { applications } from './apps/index.ts'
 import { cvStore, SCALE_STEPS } from './apps/cvstore.ts'
 import { createHtmlRenderer } from './renderer/html.ts'
 import { KernelImpl, type KernelHost } from './sys/kernel.ts'
+import fontRegularUrl from './assets/fonts/DejaVuSansMono.ttf?url'
 
 function browserName(): string {
   const ua = navigator.userAgent
@@ -35,6 +36,14 @@ const root = document.getElementById('app')
 if (!root) throw new Error('missing #app element')
 
 const renderer = createHtmlRenderer(kernel.screen, kernel.themes)
+// Warm the terminal font before the grid paints: the preload reuses the same
+// hashed asset the CSS @font-face resolves to, so there is no FOUT reflow.
+const fontPreload = document.createElement('link')
+fontPreload.rel = 'preload'
+fontPreload.as = 'font'
+fontPreload.href = fontRegularUrl
+fontPreload.crossOrigin = 'anonymous'
+document.head.appendChild(fontPreload)
 renderer.mount(root)
 // The SCALE buttons drive the whole page: the cell size follows the ladder.
 renderer.setScale(SCALE_STEPS[cvStore.get().scale])

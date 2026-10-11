@@ -2,11 +2,65 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VISHOTA | CV</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <title>VISHOTA — Fullstack Node.js Developer · Interactive CV</title>
+    <meta name="description" content="Interactive terminal CV of Uladzislau (Vishota), Fullstack Node.js Developer. A real terminal emulator running in your browser: panes, a working shell, themes. Open it and type help." />
+    <meta name="author" content="Uladzislau (Vishota)" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#0b0b0d" />
+    <link rel="canonical" href="https://cv.vishota.com/" />
+
+    <!-- Open Graph: preview when the link is shared -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="VISHOTA — CV" />
+    <meta property="og:title" content="VISHOTA — Fullstack Node.js Developer · Interactive CV" />
+    <meta property="og:description" content="A terminal emulator as a CV: panes, a working shell, themes. Fullstack Node.js Developer." />
+    <meta property="og:url" content="https://cv.vishota.com/" />
+    <meta property="og:image" content="https://cv.vishota.com/og.jpg" />
+
+    <!-- Twitter/X card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="VISHOTA — Fullstack Node.js Developer · Interactive CV" />
+    <meta name="twitter:description" content="A terminal emulator as a CV: panes, a working shell, themes." />
+    <meta name="twitter:image" content="https://cv.vishota.com/og.jpg" />
+
+    <!-- Icons / PWA -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- Structured data for search engines -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Uladzislau",
+        "alternateName": "Vishota",
+        "jobTitle": "Fullstack Node.js Developer",
+        "url": "https://cv.vishota.com/",
+        "email": "mailto:mvishota@gmail.com",
+        "sameAs": ["https://github.com/vishota", "https://t.me/vishota"]
+      }
+    </script>
   </head>
   <body>
-    <div id="app"></div>
+    <main id="app">
+      <!-- Real text for crawlers and screen readers; the terminal takes over visually. -->
+      <h1 class="visually-hidden">Uladzislau — Fullstack Node.js Developer</h1>
+      <noscript>
+        <p>
+          This CV is an interactive terminal and needs JavaScript. The PDF version lives at
+          <a href="/cv.pdf">cv.vishota.com/cv.pdf</a>.
+        </p>
+        <ul>
+          <li><a href="https://github.com/vishota">github.com/vishota</a></li>
+          <li><a href="https://t.me/vishota">t.me/vishota</a></li>
+          <li><a href="mailto:mvishota@gmail.com">mvishota@gmail.com</a></li>
+        </ul>
+      </noscript>
+    </main>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
+
