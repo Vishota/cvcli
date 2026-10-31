@@ -1,7 +1,7 @@
 export type CvLang = 'en' | 'ru'
 export const CV_LANGS: readonly CvLang[] = ['en', 'ru']
 
-export type CvPage = typeof  CV_PAGES[number]
+export type CvPage = (typeof CV_PAGES)[number]
 export const CV_PAGES = ['main', 'skills', 'experience', 'help', 'contact'] as const
 
 

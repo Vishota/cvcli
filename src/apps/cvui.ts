@@ -31,7 +31,7 @@ const MIN_WIDE_H = 14
 const FAVORITES: readonly (readonly [string, string])[] = [
   ['D', 'default'],
   ['L', 'light'],
-  ['N', 'neon'],
+  ['F', 'far'],
   ['M', 'matrix'],
 ]
 
@@ -128,7 +128,7 @@ class Pane {
     for (let y = 0; y < height; y++) this.rows.push([])
   }
   put(x: number, y: number, text: string): void {
-    if (y < 0 || y >= this.height || x >= this.width || !text) return
+    if (y < 0 || y >= this.height || x < 0 || x >= this.width || !text) return
     this.rows[y].push({ x, text: clipVisible(text, this.width - x) })
   }
   render(): string {
@@ -156,7 +156,7 @@ function cycler(name: string): string {
   return styled(`< ${name} >`, { fg: COLORS.cyan, bold: true }, 'cv theme next')
 }
 
-/** The [L] [D] [N] [B] quick-theme buttons (the favorites). */
+/** The [D] [L] [F] [M] quick-theme buttons (the favorites). */
 function quickThemes(current: string): string[] {
   return FAVORITES.map(([key, name]) =>
     current === name

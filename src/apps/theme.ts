@@ -79,6 +79,10 @@ export const theme: Application = {
         return 1
       }
       const [fg, bg, ...colors] = rest
+      if (context.sys.themeList().includes(name.trim().toLowerCase())) {
+        out.write(error(`theme add: name "${name}" is already in use\n`))
+        return 1
+      }
       if (!context.sys.themeAdd(name, fg, bg, colors)) {
         out.write(error('theme add: invalid color token (use #hex, 0-15, or a name)\n'))
         return 1

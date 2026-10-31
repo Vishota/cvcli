@@ -12,12 +12,9 @@ export const shutdown: Application = {
   async run(context) {
     context.stdout.write(dim('shutting down...\n'))
     await new Promise((resolve) => setTimeout(resolve, 150))
+    // The kernel host owns the platform: it halts everything and, in a
+    // browser, tries to close the tab. Nothing left for the app to do.
     context.sys.shutdown()
-    try {
-      window.close()
-    } catch {
-      /* browsers only allow closing script-opened windows */
-    }
     return 0
   },
 }

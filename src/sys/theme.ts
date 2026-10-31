@@ -88,6 +88,18 @@ const BUILTIN: ThemeSpec[] = [
     ],
   },
   {
+    // Far Manager: strictly two colors, light gray on the classic navy.
+    // Every fg slot is the gray; black and brightWhite take the navy, so an
+    // active button (brightWhite on cyan) inverts like a Far selection.
+    name: 'far',
+    fg: '#aaaaaa',
+    bg: '#000080',
+    colors: [
+      '#000080', '#aaaaaa', '#aaaaaa', '#aaaaaa', '#aaaaaa', '#aaaaaa', '#aaaaaa', '#aaaaaa',
+      '#aaaaaa', '#aaaaaa', '#aaaaaa', '#aaaaaa', '#aaaaaa', '#aaaaaa', '#aaaaaa', '#000080',
+    ],
+  },
+  {
     name: 'light',
     fg: '#24292e',
     bg: '#f6f8fa',

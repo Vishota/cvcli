@@ -11,6 +11,7 @@ import { man } from './src/apps/man.ts'
 import { kill, ps } from './src/apps/ps.ts'
 import { reboot } from './src/apps/reboot.ts'
 import { shell } from './src/apps/shell.ts'
+import { shutdown } from './src/apps/shutdown.ts'
 import { split } from './src/apps/split.ts'
 import { theme } from './src/apps/theme.ts'
 import { cvStore } from './src/apps/cvstore.ts'
@@ -29,7 +30,7 @@ function check(name: string, condition: boolean, extra?: string): void {
   }
 }
 
-const applications: Application[] = [shell, help, man, echo, clear, fetch, neofetch, ps, kill, split, intro, reboot, theme, gravity, cv, cvui]
+const applications: Application[] = [shell, help, man, echo, clear, fetch, neofetch, ps, kill, split, intro, reboot, shutdown, theme, gravity, cv, cvui]
 const kernel = new KernelImpl({
   applications,
   host: { reboot: () => {}, shutdown: () => {}, describe: () => ({ hostname: 'smoke-host', runtime: 'node' }) },
@@ -115,6 +116,19 @@ async function main(): Promise<void> {
   type('theme use nope')
   await sleep(20)
   check('unknown theme rejected', kernel.themes.name === 'neon', kernel.themes.name)
+  type('theme use far')
+  await sleep(20)
+  const far = kernel.themes.current
+  check(
+    'far theme is strictly two-color',
+    far.bg === '#000080' && new Set(far.colors).size === 2 && new Set(far.colors).has('#000080') && new Set(far.colors).has('#aaaaaa'),
+    JSON.stringify(far),
+  )
+  type('theme add far #ffffff #000000 ' + Array.from({ length: 16 }, () => '#123456').join(' '))
+  await sleep(20)
+  check('duplicate theme name rejected', text().includes('already in use'))
+  type('theme use default')
+  await sleep(20)
   const grad = kernel.themes.gradient('#ff0000', '#0000ff', 4)
   check('gradient has steps', !!grad && grad.length === 4 && grad[0] === '#ff0000' && grad[3] === '#0000ff', JSON.stringify(grad))
   const gradBad = kernel.themes.gradient('nope', '#0000ff', 3)
