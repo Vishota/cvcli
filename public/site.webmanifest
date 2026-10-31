@@ -1,7 +1,7 @@
 {
   "name": "VISHOTA — Interactive CV",
   "short_name": "VISHOTA",
-  "description": "Interactive terminal CV of Uladzislau, Fullstack Node.js Developer.",
+  "description": "Интерактивное CV в стиле терминала — Мишота Владислав (Mishota Uladzislau), Fullstack Node.js Developer.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0b0b0d",
