@@ -1,0 +1,13 @@
+{
+  // Static-assets-only Worker: the whole site is the Vite build output,
+  // no Worker script. With this config present, `wrangler deploy` skips its
+  // interactive Vite-project wizard and just uploads ./dist.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cv",
+  "compatibility_date": "2026-10-23",
+  "assets": {
+    "directory": "./dist",
+    // One-page app: unknown paths serve index.html (404s never happen).
+    "not_found_handling": "single-page-application"
+  }
+}
