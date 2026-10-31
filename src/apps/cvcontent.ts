@@ -18,7 +18,9 @@ import type { CvLang, CvPage } from './cvstore.ts'
 // export const CV_OWNER = 'Uladzislau'
 // Relative path: Vite copies public/cv.pdf to the site root, and a relative
 // link works both as a GitHub Pages project site and on a custom domain.
-export const CV_PDF_URL = 'cv.pdf'
+// The RU page lives one level deeper (/ru/), so its PDF link climbs up.
+const onRuPage = typeof location !== 'undefined' && /\/ru\/?$/.test(location.pathname)
+export const CV_PDF_URL = onRuPage ? '../cv.pdf' : 'cv.pdf'
 
 export const INTRO: Record<CvLang, { text: string[]; pdf: string }> = {
   en: {

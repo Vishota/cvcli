@@ -50,4 +50,6 @@ renderer.setScale(SCALE_STEPS[cvStore.get().scale])
 cvStore.subscribe(() => renderer.setScale(SCALE_STEPS[cvStore.get().scale]))
 // Autostart: the intro animation plays first, then it runs whatever follows
 // its name as a command — the CV split (cvui on top, shell/neofetch below).
+// The /ru/ page is the Russian static CV, so its terminal starts in Russian.
+if (/\/ru\/?$/.test(location.pathname)) cvStore.set({ lang: 'ru' })
 kernel.boot('intro split h2:1 --title "VISHOTA CV" cvui neofetch')
